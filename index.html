@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPR IMPORTS </title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./Css/style.css">
+    <link rel="icon" type="image/png" href="Imagens/Logo.png"/>
+
+    </head>
+    <body>
+        <!-- ==================== HEADER ==================== -->
+        <header class="header">
+            <img src="Imagens/Logo.png" alt="Logo KPR IMPORTS" class="logo">
+        </header>
+
+        
+        <!-- ==================== CARROSSEL ==================== -->
+        <div class="carousel-container">
+            <div class="carousel" id="carousel"></div>
+        </div>
+        
+        <!-- ==================== PESQUISA E FILTROS ==================== -->
+        <div class="search-filters-container">
+            <div class="search-container">
+                <input type="text" id="search" placeholder="Pesquisar produto...">
+            </div>
+            <div class="filters">
+                <div class="filter-btn active" data-filter="all">Todos</div>
+                <div class="filter-btn" data-filter="masculino">Masculino</div>
+                <div class="filter-btn" data-filter="feminino">Feminino</div>
+            </div>
+        </div>
+        
+        <!-- ==================== VITRINE FIXA ==================== -->
+        <main id="produtos"></main>
+
+        <!-- ==================== MODAL GALERIA ==================== -->
+        <div id="galeria" class="l">
+        <a href="#" class="c">&times;</a>
+        <div class="gc">
+            <div class="colors" id="galeria-cores"></div>
+            <img id="galeria-img" class="p" src="" loading="lazy">
+            <div class="m" id="galeria-mini"></div>
+            <div class="n">
+            <button class="b" id="prev">‹ Anterior</button>
+            <button class="b" id="next">Próxima ›</button>
+            </div>
+            <div class="co"><span id="galeria-cont">1 / 1</span></div>
+            <a id="whatsapp-btn" class="whatsapp-btn" href="#" target="_blank">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <img src="Imagens/whatssapp-big-logo.png" alt="whatsapp logo" id="whatsapp_img">
+              </svg>
+              Falar com o vendedor
+            </a>
+        </div>
+        </div>
+
+    </body>
+    
+    <script src="./Js/main.js"></script>
+</html>
