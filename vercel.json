@@ -1,10 +1,8 @@
 {
-  "buildCommand": "echo 'Static site - no build needed'",
-  "outputDirectory": ".",
   "public": true,
   "headers": [
     {
-      "source": "/Js/*.js",
+      "source": "/Js/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -13,7 +11,7 @@
       ]
     },
     {
-      "source": "/Css/*.css",
+      "source": "/Css/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
