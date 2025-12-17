@@ -33,7 +33,7 @@ function gerarVitrine(filtro='all', search=''){
     a.dataset.prod = pIndex;
     a.dataset.cor = 0; // cor padrão
 
-    const firstImg = (produto.cores && produto.cores[0] && produto.cores[0].gallery && produto.cores[0].gallery[0]) ? produto.cores[0].gallery[0] : 'Imagens/placeholder.png';
+    const firstImg = (produto.cores && produto.cores[0] && produto.cores[0].gallery && produto.cores[0].gallery[0]) ? produto.cores[0].gallery[0] : 'Imagens/Logo.jpg';
     const precoText = formatPreco(produto.preco);
 
     // Conteúdo básico do cartão
@@ -54,7 +54,7 @@ function gerarVitrine(filtro='all', search=''){
           ev.stopPropagation();
           // trocar imagem mostrada no cartão e marcar cor selecionada
           const img = a.querySelector('img');
-          const src = (cor.gallery && cor.gallery[0]) ? cor.gallery[0] : 'Imagens/placeholder.png';
+          const src = (cor.gallery && cor.gallery[0]) ? cor.gallery[0] : 'Imagens/Logo.jpg';
           img.src = src;
           a.dataset.cor = cIndex;
           // atualizar estilo visual dos swatches
@@ -149,8 +149,12 @@ window.excluirProduto = function(index){
     return;
   }
   
-  deletarProdutoAPI(produtoId).then(()=>{
-    produtos.splice(index, 1);
+  deletarProdutoAPI(produtoId).then(async ()=>{
+    try{
+      const data = await carregarProdutosAPI();
+      if(Array.isArray(data)) produtos = data;
+    }catch(e){ console.error('Erro ao recarregar produtos após exclusão', e); }
+
     const filtro = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
     const pesquisa = document.getElementById('search')?.value || '';
     gerarVitrine(filtro, pesquisa);
@@ -200,7 +204,7 @@ function initAdminForm(){
       const nomeC = block.querySelector('.adm-color-name').value.trim();
       const hex = block.querySelector('.adm-color-hex').value.trim() || '#ccc';
       const galleryRaw = block.querySelector('.adm-color-gallery').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-      return { nome: nomeC || 'Cor', hex, gallery: galleryRaw.length? galleryRaw : ['Imagens/placeholder.png'] };
+      return { nome: nomeC || 'Cor', hex, gallery: galleryRaw.length? galleryRaw : ['Imagens/Logo.jpg'] };
     }).filter(c=>c.gallery && c.gallery.length);
 
     if(!nome || !cores.length){
@@ -215,8 +219,12 @@ function initAdminForm(){
     if(editIndex !== undefined){
       // modo edição
       const produtoId = produtos[editIndex].id;
-      atualizarProdutoAPI(produtoId, novo).then(()=>{
-        produtos[editIndex] = { ...novo, id: produtoId };
+      atualizarProdutoAPI(produtoId, novo).then(async ()=>{
+        try{
+          const data = await carregarProdutosAPI();
+          if(Array.isArray(data)) produtos = data;
+        }catch(e){ console.error('Erro ao recarregar produtos após edição', e); }
+
         const filtro = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
         const pesquisa = document.getElementById('search')?.value || '';
         gerarVitrine(filtro, pesquisa);
@@ -232,8 +240,13 @@ function initAdminForm(){
       });
     } else {
       // modo adição
-      criarProdutoAPI(novo).then((produtoCriado)=>{
-        produtos.push(produtoCriado);
+      criarProdutoAPI(novo).then(async (produtoCriado)=>{
+        // Após criar, recarrega a lista de produtos do servidor para garantir formato completo
+        try{
+          const data = await carregarProdutosAPI();
+          if(Array.isArray(data)) produtos = data;
+        }catch(e){ console.error('Erro ao recarregar produtos após criação', e); }
+
         const filtro = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
         const pesquisa = document.getElementById('search')?.value || '';
         gerarVitrine(filtro, pesquisa);
@@ -297,7 +310,7 @@ function gerarCarousel(){
   carousel.innerHTML='';
   produtos.forEach((produto,pIndex)=>{
     // usar imagem da primeira cor como capa do produto
-    const firstImg = (produto.cores && produto.cores[0] && produto.cores[0].gallery && produto.cores[0].gallery[0]) ? produto.cores[0].gallery[0] : 'Imagens/placeholder.png';
+    const firstImg = (produto.cores && produto.cores[0] && produto.cores[0].gallery && produto.cores[0].gallery[0]) ? produto.cores[0].gallery[0] : 'Imagens/Logo.jpg';
     const a = document.createElement('a');
     a.href = "#galeria";
     a.className = "i";
@@ -320,7 +333,7 @@ function gerarCarousel(){
           ev.preventDefault();
           ev.stopPropagation();
           const img = a.querySelector('img');
-          const src = (cor.gallery && cor.gallery[0]) ? cor.gallery[0] : 'Imagens/placeholder.png';
+          const src = (cor.gallery && cor.gallery[0]) ? cor.gallery[0] : 'Imagens/Logo.jpg';
           img.src = src;
           a.dataset.cor = cIndex;
           swatches.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));
