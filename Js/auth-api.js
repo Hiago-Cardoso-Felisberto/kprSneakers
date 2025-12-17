@@ -5,6 +5,9 @@ const API_URL = isLocalhost
   ? 'http://localhost:3001/api'
   : 'https://kprimports-api.onrender.com/api';
 
+// Expor para debugging no Console (somente leitura)
+try{ window.API_URL = API_URL; }catch(e){}
+
 // Função para obter token do localStorage
 function getToken() {
   return localStorage.getItem('authToken');
