@@ -240,22 +240,260 @@ body{
 }
 
 /* ==================== RESPONSIVO ==================== */
-@media(max-width:768px){
-  .h h1{font-size:2em}
-  .t{font-size:0.9em}
-  .i{min-width:150px;}
 
-.card-colors{
-  display:flex;
-  gap:6px;
-  justify-content:center;
-  margin-top:14px;
+/* TABLETS (768px - 1024px) */
+@media(max-width:1024px){
+  #produtos{
+    grid-template-columns:repeat(4,1fr);
+    max-width:100%;
+    padding:10px 15px;
+  }
+  .carousel-container{
+    height:18vw;
+  }
+  .carousel .i{
+    min-width:18vw;
+    max-width:18vw;
+  }
 }
-.color-swatch{
-  width:18px; height:18px; border-radius:50%; border:2px solid rgba(0,0,0,0.2); cursor:pointer; padding:0; outline:none;
+
+/* CELULARES (até 768px) */
+@media(max-width:768px){
+  /* Header e Logo */
+  .header{
+    padding:8px 10px;
+  }
+  .logo{
+    width:35vw;
+  }
+
+  /* Pesquisa */
+  .search-filters-container{
+    flex-direction:column;
+    gap:10px;
+    padding:8px 5px;
+  }
+  #search{
+    width:90%;
+    max-width:300px;
+    padding:8px 12px;
+    font-size:0.95em;
+  }
+
+  /* Filtros */
+  .filters{
+    gap:8px;
+    padding:0 5px;
+  }
+  .filter-btn{
+    padding:6px 12px;
+    font-size:0.85em;
+  }
+
+  /* Carrossel - AJUSTE PRINCIPAL */
+  .carousel-container{
+    height:35vw;
+    padding:8px 0;
+    margin:3vw 0 0 0;
+    overflow-y:visible;
+  }
+  .carousel{
+    gap:8px;
+  }
+  .carousel .i{
+    min-width:45vw;
+    max-width:45vw;
+    border:2px solid #CAA56A;
+  }
+  .carousel .i img{
+    aspect-ratio:1/1;
+    object-fit:cover;
+  }
+
+  /* Cores no Carrossel */
+  .card-colors{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin-top:8px;
+    padding:5px;
+  }
+  .color-swatch{
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    border:2px solid rgba(202,165,106,0.5);
+    cursor:pointer;
+    padding:0;
+    outline:none;
+    transition:all 0.3s ease;
+  }
+  .color-swatch.selected{
+    box-shadow:0 0 0 3px rgba(202,165,106,0.3);
+    border-color:#CAA56A;
+  }
+
+  /* Vitrine */
+  #produtos{
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    padding:8px 10px;
+    max-width:100%;
+  }
+  #produtos .i{
+    padding:6px;
+  }
+  #produtos .i img{
+    border-radius:6px;
+  }
+
+  /* Título do Produto */
+  .t{
+    font-size:0.85em;
+    margin-top:4px;
+  }
+
+  /* Preço */
+  .preco{
+    font-size:0.75em;
+    margin-top:3px;
+  }
+
+  /* Modal Galeria */
+  .gc{
+    --gallery-width: 90vw;
+    --gallery-height: 60vh;
+    max-width:95%;
+    padding:10px;
+  }
+  .p{
+    height:calc(var(--gallery-height) - 100px);
+    border:3px solid #CAA56A;
+    margin-bottom:12px;
+  }
+
+  /* Miniaturas Galeria */
+  .mi{
+    width:60px;
+    height:60px;
+    border:1px solid #CAA56A;
+  }
+
+  /* Botões Galeria */
+  .b{
+    padding:8px 12px;
+    font-size:1em;
+  }
+  .n{
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  /* Cores Galeria */
+  .color-btn{
+    width:24px;
+    height:24px;
+  }
+  .co{
+    font-size:0.95em;
+    margin-top:8px;
+  }
+
+  /* WhatsApp Button */
+  .whatsapp-btn{
+    padding:10px 15px;
+    font-size:0.9em;
+    margin-top:12px;
+  }
+  #whatsapp_img{
+    width:18px;
+    height:18px;
+    margin-left:-35px;
+  }
+
+  /* Admin Form */
+  #admin-panel{
+    padding:10px;
+  }
+  #admin-form input,
+  #admin-form select,
+  #admin-form textarea{
+    font-size:0.95em;
+    padding:6px;
+  }
+  .admin-color-block{
+    flex-direction:column;
+  }
 }
-.color-swatch.selected{ box-shadow:0 0 0 3px rgba(202,165,106,0.12); }
+
+/* CELULARES PEQUENOS (até 480px) */
+@media(max-width:480px){
+  /* Header */
+  .header{
+    padding:6px 8px;
+  }
+  .logo{
+    width:40vw;
+  }
+
+  /* Pesquisa */
+  #search{
+    width:100%;
+    font-size:0.9em;
+  }
+
+  /* Filtros */
+  .filter-btn{
+    padding:5px 10px;
+    font-size:0.8em;
+  }
+
+  /* Carrossel - Muito Compacto */
+  .carousel-container{
+    height:50vw;
+    margin:2vw 0 0 0;
+  }
+  .carousel .i{
+    min-width:60vw;
+    max-width:60vw;
+    border:2px solid #CAA56A;
+  }
+
+  /* Vitrine */
+  #produtos{
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+    padding:6px 8px;
+  }
+
+  /* Título */
+  .t{
+    font-size:0.75em;
+  }
+
+  /* Modal */
+  .gc{
+    --gallery-width: 95vw;
+    --gallery-height: 55vh;
+    padding:8px;
+  }
+  .p{
+    height:calc(var(--gallery-height) - 90px);
+    border:2px solid #CAA56A;
+  }
+
+  .mi{
+    width:50px;
+    height:50px;
+  }
+
+  .c{
+    top:10px;
+    right:15px;
+    font-size:1.5em;
+  }
 }
+
 
 /* Estilos mínimos para o painel admin */
 #admin-panel details{border-top:1px solid rgba(202,165,106,0.12);padding-top:10px;margin-top:12px}
