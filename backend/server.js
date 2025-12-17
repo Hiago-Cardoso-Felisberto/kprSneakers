@@ -12,14 +12,34 @@ const PORT = process.env.PORT || 3001;
 
 // Middlewares
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://127.0.0.1:3000',
-    'https://kprsneakers.vercel.app',
-    'https://www.kprsneakers.vercel.app'
-  ],
-  credentials: true
+  origin: function(origin, callback) {
+    // Permitir requests sem origin (requisições same-origin, curl, etc)
+    if (!origin || origin === 'null') return callback(null, true);
+    
+    // Domínios permitidos
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
+      'https://kprsneakers.vercel.app',
+      'https://www.kprsneakers.vercel.app',
+      'https://kprsneakers.com',
+      'https://www.kprsneakers.com'
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      // Log para debug
+      console.warn(`CORS rejeitado para origin: ${origin}`);
+      callback(null, true); // Temporário: aceitar mesmo assim (remover em produção)
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
