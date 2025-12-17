@@ -23,6 +23,8 @@ app.use(cors({
       'http://localhost',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
+      'https://kpr-sneakers.vercel.app',
+      'https://www.kpr-sneakers.vercel.app',
       'https://kprsneakers.vercel.app',
       'https://www.kprsneakers.vercel.app',
       'https://kprsneakers.com',
