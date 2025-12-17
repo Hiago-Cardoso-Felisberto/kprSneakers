@@ -11,7 +11,16 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'https://kprsneakers.vercel.app',
+    'https://www.kprsneakers.vercel.app'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Inicializar banco
