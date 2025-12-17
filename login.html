@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPR IMPORTS - Login Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #111 0%, #0A0A0A 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #CAA56A;
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(202, 165, 106, 0.1);
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header h1 {
+            font-size: 2em;
+            color: #CAA56A;
+            margin-bottom: 10px;
+        }
+        .login-header p {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #CAA56A;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(202, 165, 106, 0.3);
+            color: #fff;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        input:focus {
+            outline: none;
+            border-color: #CAA56A;
+            box-shadow: 0 0 8px rgba(202, 165, 106, 0.3);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #CAA56A;
+            color: #111;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        .btn-login:hover {
+            background: #d9b577;
+            transform: scale(1.02);
+        }
+        .btn-login:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .error {
+            color: #dc3232;
+            font-size: 0.9em;
+            margin-top: 6px;
+            display: none;
+        }
+        .success {
+            color: #4caf50;
+            font-size: 0.9em;
+            margin-top: 6px;
+            display: none;
+        }
+        .toggle-register {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        .toggle-register button {
+            background: none;
+            border: none;
+            color: #CAA56A;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 1em;
+        }
+        .register-form {
+            display: none;
+        }
+        #nome-group {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>KPR IMPORTS</h1>
+            <p>Painel Admin</p>
+        </div>
+
+        <form id="login-form" class="login-form">
+            <div id="nome-group" class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" placeholder="Seu nome completo">
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" placeholder="seu@email.com" required>
+            </div>
+            <div class="form-group">
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" placeholder="Sua senha" required>
+            </div>
+            <div class="error" id="error-msg"></div>
+            <div class="success" id="success-msg"></div>
+            <button type="submit" class="btn-login" id="btn-submit">Entrar</button>
+        </form>
+
+        <div class="toggle-register">
+            <p>
+                <span id="toggle-text">Não tem conta?</span>
+                <button type="button" id="toggle-btn">Criar conta</button>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        
+        const formEl = document.getElementById('login-form');
+        const emailEl = document.getElementById('email');
+        const senhaEl = document.getElementById('senha');
+        const nomeEl = document.getElementById('nome');
+        const nomeGroup = document.getElementById('nome-group');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const toggleText = document.getElementById('toggle-text');
+        const btnSubmit = document.getElementById('btn-submit');
+        const errorMsg = document.getElementById('error-msg');
+        const successMsg = document.getElementById('success-msg');
+
+        let isRegisterMode = false;
+
+        // Verificar se já está autenticado
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            window.location.href = 'index.html';
+        }
+
+        // Toggle entre login e registro
+        toggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            isRegisterMode = !isRegisterMode;
+            nomeGroup.style.display = isRegisterMode ? 'block' : 'none';
+            btnSubmit.textContent = isRegisterMode ? 'Criar conta' : 'Entrar';
+            toggleText.textContent = isRegisterMode ? 'Já tem conta?' : 'Não tem conta?';
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+        });
+
+        // Submeter formulário
+        formEl.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            btnSubmit.disabled = true;
+
+            try {
+                if (isRegisterMode) {
+                    // Registro
+                    const response = await fetch(`${API_URL}/auth/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: emailEl.value,
+                            senha: senhaEl.value,
+                            nome: nomeEl.value
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.erro || 'Erro ao registrar');
+                    }
+
+                    successMsg.textContent = 'Conta criada com sucesso! Faça login agora.';
+                    successMsg.style.display = 'block';
+                    isRegisterMode = false;
+                    nomeGroup.style.display = 'none';
+                    btnSubmit.textContent = 'Entrar';
+                    toggleText.textContent = 'Não tem conta?';
+                    nomeEl.value = '';
+                    emailEl.value = '';
+                    senhaEl.value = '';
+                } else {
+                    // Login
+                    const response = await fetch(`${API_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: emailEl.value,
+                            senha: senhaEl.value
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.erro || 'Erro ao fazer login');
+                    }
+
+                    // Salvar token e dados do usuário
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('usuario', JSON.stringify(data.usuario));
+
+                    successMsg.textContent = 'Login realizado com sucesso! Redirecionando...';
+                    successMsg.style.display = 'block';
+
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+            } finally {
+                btnSubmit.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

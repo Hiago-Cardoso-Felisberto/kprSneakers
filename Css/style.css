@@ -2,7 +2,7 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
   font-family:Arial,sans-serif;
-  background:linear-gradient(to bottom,#1c1c1c,#111);
+  background:linear-gradient(to bottom, #111,#0A0A0A);
   color:#fff;
   overflow-x:hidden;
 }
@@ -13,8 +13,8 @@ body{
   align-items:center;
   justify-content:center;
   padding:8px 20px;
-  background:rgba(30,144,255,0.05);
-  border-bottom:2px solid #1E90FF;
+  background: #0A0A0A;
+  border-bottom:2px solid #CAA56A;
 }
 .logo{
   width:20vw;
@@ -37,7 +37,7 @@ body{
 #search{
   padding:8px 15px;
   border-radius:8px;
-  border:2px solid #1E90FF;
+  border:2px solid #CAA56A;
   background:rgba(30,144,255,0.1);
   color:#fff;
   width:250px;
@@ -48,15 +48,15 @@ body{
 }
 .filter-btn{
   padding:8px 15px;
-  border:2px solid #1E90FF;
+  border:2px solid #CAA56A;
   border-radius:8px;
   background:rgba(30,144,255,0.1);
   cursor:pointer;
-  color:#1E90FF;
+  color:#CAA56A;
   transition:all 0.3s;
 }
 .filter-btn:hover,.filter-btn.active{
-  background:#1E90FF;
+  background:#CAA56A;
   color:#111;
   transform:scale(1.05);
 }
@@ -66,7 +66,7 @@ body{
   overflow:hidden;
   padding:5px 0;
   margin: 2vw 0 0 0;
-  height: 22vw;
+  height: 20vw;
 }
 
 .carousel{
@@ -76,12 +76,13 @@ body{
   will-change:transform;
 }
 .carousel .i{
-  min-width:250px;
+  min-width: 15vw;
+  max-width: 15vw;
   position:relative;
   overflow:hidden;
   border-radius:12px;
-  border:3px solid #1E90FF;
-  box-shadow:0 4px 20px rgba(30,144,255,0.3);
+  border:3px solid #CAA56A;
+  box-shadow:0 4px 20px rgba(217, 236, 74, 0.195);
   cursor:pointer;
   transition:transform 0.5s, box-shadow 0.5s;
   text-decoration: none;
@@ -94,15 +95,15 @@ body{
   transition:transform 0.5s,filter 0.5s;
 }
 .carousel .i:hover{
-  transform:scale(1.05);
-  box-shadow:0 15px 40px rgba(30,144,255,0.8);
+  transform:scale(1.01);
+  box-shadow:0 5px 20px #CAA56A;
 }
 
 /* ==================== NOME PRODUTO ==================== */
 .t{
   margin-top:5px;
   text-align:center;
-  color:#1E90FF;
+  color:#CAA56A;
   font-family: 'Playfair Display', serif;
   font-size:1em;
   text-shadow:0 0 4px rgba(0,0,0,0.8);
@@ -112,18 +113,30 @@ body{
 /* ==================== VITRINE FIXA ==================== */
 #produtos{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  grid-template-columns:repeat(5,1fr);
   gap:12px;
   padding:10px 20px;
+  max-width:800px;
+  margin:0 auto;
+}
+#produtos .i{
+  display:block;
+  padding:8px;
+  background:rgba(255,255,255,0.02);
+  border-radius:12px;
 }
 #produtos .i img{
-  width:88%;
+  width:100%;
   aspect-ratio:1/1;
   object-fit:cover;
   transition:transform 0.3s;
-  border-radius:12px;
+  border-radius:8px;
 }
-#produtos .i:hover img{transform:scale(1.05);}
+#produtos .i:hover img{transform:scale(1.02);}
+#produtos .i, #produtos .i a{
+  text-decoration: none;
+  color: inherit;
+}
 
 /* ==================== MODAL GALERIA ==================== */
 .l{
@@ -141,21 +154,29 @@ body{
 .l:target{display:flex;}
 .c{
   position:absolute; top:20px; right:30px;
-  font-size:2em; color:#1E90FF; text-decoration:none; font-weight:bold;
-  text-shadow:0 0 10px rgba(30,144,255,0.8);
+  font-size:2em; color:#CAA56A; text-decoration:none; font-weight:bold;
+  text-shadow:0 0 10px #CAA56A;
   transition:transform 0.3s; z-index:1001;
 }
-.c:hover{transform:scale(1.2);}
+.c:hover{transform:scale(1.1);}
 .gc{
   display:flex; flex-direction:column; align-items:center;
-  max-width:90%; max-height:90%; animation:fadeIn 0.3s ease;
+  max-width:90%; animation:fadeIn 0.3s ease;
+  --gallery-width: 50vh;
+  --gallery-height: 70vh;
+  width: var(--gallery-width);
+  height: var(--gallery-height);
+  box-sizing: border-box;
+  padding: 12px;
 }
 .p{
-  max-width:100%; max-height:50vh;
-  border:5px solid #1E90FF; border-radius:10px;
-  box-shadow:0 0 30px rgba(30,144,255,0.7);
+  width:100%;
+  height: calc(var(--gallery-height) - 120px);
+  border:5px solid #CAA56A; border-radius:10px;
+  box-shadow:0 0 30px #CAA56A;
   margin-bottom:20px; object-fit:contain;
   cursor:zoom-in; transition:transform 0.3s ease;
+  text-decoration: none; display:block;
 }
 .p:hover ~ .m,
 .p:hover ~ .n,
@@ -166,24 +187,24 @@ body{
 }
 .m{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom:15px; transition:opacity 0.3s ease;}
 .mi{
-  width:80px; height:80px; border:2px solid #1E90FF;
+  width:80px; height:80px; border:2px solid #CAA56A;
   border-radius:8px; cursor:pointer; object-fit:cover;
   transition:all 0.3s ease; opacity:0.7;
 }
 .mi:hover,.mi.a{
-  opacity:1; border-color:#00BFFF; transform:scale(1.1);
-  box-shadow:0 0 15px rgba(30,144,255,0.8);
+  opacity:1; border-color:#CAA56A; transform:scale(1.1);
+  box-shadow:0 0 15px #CAA56A;
 }
 .n{display:flex;gap:15px;margin-top:15px;}
 .b{
   background:rgba(30,144,255,0.2);
-  border:2px solid #1E90FF;color:#1E90FF;
+  border:2px solid #CAA56A;color:#CAA56A;
   padding:10px 15px;border-radius:8px;
   cursor:pointer;font-size:1.2em;transition:all 0.3s ease;
 }
 .b:hover{background:rgba(30,144,255,0.4);transform:scale(1.05);}
-.co{color:#1E90FF;font-size:1.1em;margin-top:10px;text-align:center;}
-.colors{display:flex;gap:10px;margin-bottom:15px;}
+.co{color:#CAA56A;font-size:1.1em;margin-top:10px;text-align:center;}
+.colors{display:flex;gap:10px;margin-bottom:28px;}
 .color-btn{
   width:30px; height:30px; border-radius:50%;
   border:2px solid #F0E68C; cursor:pointer; transition:all 0.3s;
@@ -223,7 +244,40 @@ body{
   .h h1{font-size:2em}
   .t{font-size:0.9em}
   .i{min-width:150px;}
+
+.card-colors{
+  display:flex;
+  gap:6px;
+  justify-content:center;
+  margin-top:14px;
 }
+.color-swatch{
+  width:18px; height:18px; border-radius:50%; border:2px solid rgba(0,0,0,0.2); cursor:pointer; padding:0; outline:none;
+}
+.color-swatch.selected{ box-shadow:0 0 0 3px rgba(202,165,106,0.12); }
+}
+
+/* Estilos mínimos para o painel admin */
+#admin-panel details{border-top:1px solid rgba(202,165,106,0.12);padding-top:10px;margin-top:12px}
+#admin-form input, #admin-form select, #admin-form textarea{background:rgba(255,255,255,0.03);border:1px solid rgba(202,165,106,0.15);color:#fff;padding:8px;border-radius:6px}
+#admin-form .b{background:rgba(202,165,106,0.08);border:1px solid #CAA56A;color:#CAA56A}
+#admin-form .b:hover{transform:none}
+#admin-form textarea{resize:vertical}
+
+/* Link discreto para admin/login */
+#admin-link{opacity:0.28;color:#CAA56A;margin-left:12px;text-decoration:none}
+#admin-link:hover{opacity:1;text-decoration:underline}
+
+/* Pesquisa ativa: override via classe */
+#produtos.search-active {
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  justify-content:center;
+  max-width:1200px;
+}
+
+/* Preço exibido abaixo do nome */
+.preco{font-size:0.80em;text-align:center;color:#CAA56A;margin-top:4px;font-weight:600}
+.preco::before{content:""}
 
 /* ==================== ANIMAÇÃO ==================== */
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}

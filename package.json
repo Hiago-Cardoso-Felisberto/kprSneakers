@@ -1,0 +1,19 @@
+{
+  "name": "kpr-imports",
+  "version": "1.0.0",
+  "description": "Sistema de gerenciamento de produtos com autenticação segura",
+  "main": "backend/server.js",
+  "scripts": {
+    "setup": "cd backend && npm install && cd ..",
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev",
+    "test": "echo \"Testes não configurados\" && exit 1"
+  },
+  "keywords": ["ecommerce", "kpr", "sneakers", "Tênis", "tenis" , "importados", "imports"],
+  "author": "Hiago C Felisberto",
+  "license": "ISC",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

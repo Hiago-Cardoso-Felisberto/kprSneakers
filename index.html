@@ -3,16 +3,20 @@
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KPR IMPORTS </title>
+    <title>KPR Sneakers </title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./Css/style.css">
-    <link rel="icon" type="image/png" href="Imagens/Logo.png"/>
+    <link rel="icon" type="image/png" href="Imagens/Logo.ico"/>
 
     </head>
     <body>
         <!-- ==================== HEADER ==================== -->
         <header class="header">
-            <img src="Imagens/Logo.png" alt="Logo KPR IMPORTS" class="logo">
+            <img src="Imagens/Logo.jpg" alt="Logo KPR IMPORTS" class="logo">
+            <div id="header-user" style="display:none;margin-left:auto;display:flex;gap:15px;align-items:center;color:#CAA56A;">
+                <span id="header-usuario-nome"></span>
+                <button id="btn-logout" class="b" style="padding:8px 12px;font-size:0.9em;">Sair</button>
+            </div>
         </header>
 
         
@@ -57,7 +61,54 @@
         </div>
         </div>
 
-    </body>
+     <a id="admin-link" href="login.html" style="opacity:0.1;color:#CAA56A;margin-left:12px;font-size:0.9em;text-decoration:none;">Admin</a>
+
+<!-- Painel admin para adicionar produtos dinamicamente -->
+<section id="admin-panel" style="padding:20px;background:rgba(255,255,255,0.02);">
+    <details>
+        <summary style="cursor:pointer;color:#CAA56A;font-weight:bold;padding:8px 0;">Painel Admin — Adicionar/Editar produto</summary>
+        <form id="admin-form" style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-width:700px;">
+            <input id="admin-nome" type="text" placeholder="Nome do produto (ex: Nike Air)" required>
+            <select id="admin-tipo">
+                <option value="masculino">Masculino</option>
+                <option value="feminino">Feminino</option>
+                <option value="unissex">Unissex</option>
+            </select>
+            <input id="admin-preco" type="number" placeholder="Preço (opcional)" step="0.01">
+
+            <div id="admin-cores">
+                <!-- Blocos de cor serão inseridos aqui -->
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" id="add-color-btn" class="b">Adicionar cor</button>
+                <button type="submit" class="b">Adicionar/Salvar produto</button>
+                <button type="button" id="cancel-edit-btn" class="b" style="background:rgba(150,150,150,0.2);border-color:#888;color:#aaa;display:none;">Cancelar edição</button>
+            </div>
+            <small style="color:#ccc;">Para cada cor, insira URLs das imagens uma por linha no campo "Galeria".</small>
+        </form>
+    </details>
     
-    <script src="./Js/main.js"></script>
+    <details style="margin-top:12px;">
+        <summary style="cursor:pointer;color:#CAA56A;font-weight:bold;padding:8px 0;">Produtos cadastrados</summary>
+        <div id="produtos-list" style="margin-top:12px;max-height:400px;overflow-y:auto;">
+            <!-- Lista de produtos será gerada aqui -->
+        </div>
+    </details>
+
+    <details style="margin-top:12px;">
+        <summary style="cursor:pointer;color:#CAA56A;font-weight:bold;padding:8px 0;">Alterar senha</summary>
+        <form id="change-password-form" style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-width:400px;">
+            <input type="password" id="senha-atual" placeholder="Senha atual" required>
+            <input type="password" id="senha-nova" placeholder="Nova senha" required minlength="6">
+            <input type="password" id="senha-confirmacao" placeholder="Confirme a nova senha" required minlength="6">
+            <button type="submit" class="b">Alterar senha</button>
+            <small id="change-password-msg" style="color:#ccc;"></small>
+        </form>
+    </details>
+</section>
+
+<script src="./Js/init-auth.js" type="module"></script>
+<script src="./Js/auth-api.js" type="module"></script>
+<script src="./Js/main.js" type="module"></script>
+</body>
 </html>
