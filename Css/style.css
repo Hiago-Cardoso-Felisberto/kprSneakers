@@ -123,15 +123,15 @@ body{
 /* ==================== VITRINE FIXA ==================== */
 #produtos{
   display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:12px;
-  padding:10px 20px;
-  max-width:800px;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+  padding:15px 20px;
+  max-width:1000px;
   margin:0 auto;
 }
 #produtos .i{
   display:block;
-  padding:8px;
+  padding:10px;
   background:rgba(255,255,255,0.02);
   border-radius:12px;
 }
@@ -379,9 +379,9 @@ body{
 /* DESKTOP GRANDE (1440px+) */
 @media(min-width:1440px){
   #produtos{
-    grid-template-columns:repeat(6,1fr);
+    grid-template-columns:repeat(5,1fr);
     max-width:1200px;
-    gap:16px;
+    gap:18px;
   }
 }
 
@@ -390,6 +390,7 @@ body{
   #produtos{
     grid-template-columns:repeat(4,1fr);
     max-width:1000px;
+    gap:14px;
   }
   
   .carousel-container{
@@ -477,48 +478,49 @@ body{
   }
   
   .carousel-container{
-    height:32vw;
+    height:55vw;
     padding:10px 0;
     margin:4vw 0 0 0;
   }
   
   .carousel{
-    gap:10px;
+    gap:12px;
   }
   
   .carousel .i{
-    min-width:40vw;
-    max-width:40vw;
-    border:2.5px solid #CAA56A;
+    min-width:65vw;
+    max-width:65vw;
+    border:3px solid #CAA56A;
   }
   
   .t{
-    font-size:0.9em;
-    margin-top:6px;
+    font-size:1em;
+    margin-top:8px;
   }
   
   .preco{
-    font-size:0.8em;
+    font-size:0.9em;
   }
   
   .card-colors{
-    gap:6px;
-    margin-top:6px;
+    gap:8px;
+    margin-top:8px;
   }
   
   .color-swatch{
-    width:18px;
-    height:18px;
+    width:22px;
+    height:22px;
   }
   
   #produtos{
-    grid-template-columns:repeat(3,1fr);
-    gap:10px;
-    padding:12px 10px;
+    grid-template-columns:1fr;
+    gap:16px;
+    padding:15px;
+    max-width:500px;
   }
   
   #produtos .i{
-    padding:6px;
+    padding:12px;
   }
   
   .gc{
@@ -583,28 +585,43 @@ body{
   }
   
   .carousel-container{
-    height:38vw;
+    height:60vw;
     margin:5vw 0 0 0;
   }
   
+  .carousel{
+    gap:14px;
+  }
+  
   .carousel .i{
-    min-width:45vw;
-    max-width:45vw;
-    border:2px solid #CAA56A;
+    min-width:70vw;
+    max-width:70vw;
+    border:3px solid #CAA56A;
   }
   
   .t{
-    font-size:0.85em;
+    font-size:1.05em;
+    margin-top:10px;
   }
   
   .preco{
-    font-size:0.75em;
+    font-size:0.95em;
+  }
+  
+  .color-swatch{
+    width:24px;
+    height:24px;
   }
   
   #produtos{
-    grid-template-columns:repeat(2,1fr);
-    gap:10px;
-    padding:10px;
+    grid-template-columns:1fr;
+    gap:18px;
+    padding:15px;
+    max-width:450px;
+  }
+  
+  #produtos .i{
+    padding:12px;
   }
   
   .gc{
@@ -673,25 +690,42 @@ body{
   }
   
   .carousel-container{
-    height:44vw;
+    height:65vw;
+  }
+  
+  .carousel{
+    gap:15px;
   }
   
   .carousel .i{
-    min-width:52vw;
-    max-width:52vw;
+    min-width:75vw;
+    max-width:75vw;
+    border:3px solid #CAA56A;
   }
   
   .t{
-    font-size:0.8em;
+    font-size:1.1em;
+    margin-top:10px;
   }
   
   .preco{
-    font-size:0.7em;
+    font-size:1em;
   }
   
   .color-swatch{
-    width:16px;
-    height:16px;
+    width:26px;
+    height:26px;
+  }
+  
+  #produtos{
+    grid-template-columns:1fr;
+    gap:20px;
+    padding:18px;
+    max-width:420px;
+  }
+  
+  #produtos .i{
+    padding:14px;
   }
   
   .gc{
@@ -747,41 +781,48 @@ body{
   }
   
   .carousel-container{
-    height:50vw;
-    padding:6px 0;
+    height:70vw;
+    padding:8px 0;
+  }
+  
+  .carousel{
+    gap:16px;
   }
   
   .carousel .i{
-    min-width:62vw;
-    max-width:62vw;
+    min-width:80vw;
+    max-width:80vw;
+    border:3px solid #CAA56A;
   }
   
   .t{
-    font-size:0.75em;
-    margin-top:4px;
+    font-size:1.05em;
+    margin-top:10px;
   }
   
   .preco{
-    font-size:0.65em;
+    font-size:0.95em;
   }
   
   .color-swatch{
-    width:14px;
-    height:14px;
-    border-width:1.5px;
+    width:24px;
+    height:24px;
+    border-width:2px;
   }
   
   .card-colors{
-    gap:4px;
+    gap:6px;
   }
   
   #produtos{
-    gap:8px;
-    padding:8px;
+    grid-template-columns:1fr;
+    gap:20px;
+    padding:18px 12px;
+    max-width:400px;
   }
   
   #produtos .i{
-    padding:5px;
+    padding:14px;
   }
   
   .gc{
