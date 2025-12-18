@@ -29,6 +29,8 @@ body{
   gap:16px;
   padding:8px 10px;
   flex-wrap:wrap;
+  position:relative;
+  z-index:10;
 }
 .search-container{
   display:flex;
@@ -67,6 +69,8 @@ body{
   padding:5px 0;
   margin: 2vw 0 0 0;
   height: 20vw;
+  position:relative;
+  z-index:5;
 }
 
 .carousel{
