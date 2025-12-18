@@ -269,6 +269,7 @@ body{
 
   /* Pesquisa */
   .search-filters-container{
+    margin-top: 10vh;
     flex-direction:column;
     gap:10px;
     padding:8px 5px;
