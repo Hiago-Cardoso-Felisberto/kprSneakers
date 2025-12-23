@@ -1,21 +1,31 @@
 import express from 'express';
-import { dbGet, dbAll, dbRun } from '../database.js';
+import { dbGet, dbAll, dbRun, isPostgres } from '../database.js';
 import { verificarToken } from '../auth.js';
 
 const router = express.Router();
 
-// GET: Listar todos os produtos (público)
+// Helper de placeholders
+const p = (n) => isPostgres ? `$${n}` : '?';
+
+// GET: Listar todos os produtos
 router.get('/', async (req, res) => {
   try {
     const produtos = await dbAll('SELECT * FROM produtos ORDER BY id DESC');
-    
-    // Carregar cores e galeria para cada produto
+
     const produtosCompletos = await Promise.all(
       produtos.map(async (prod) => {
-        const cores = await dbAll('SELECT * FROM cores WHERE produto_id = ?', [prod.id]);
+        const cores = await dbAll(
+          `SELECT * FROM cores WHERE produto_id = ${p(1)}`,
+          [prod.id]
+        );
+
         const coresCompletas = await Promise.all(
           cores.map(async (cor) => {
-            const galeria = await dbAll('SELECT url FROM galeria WHERE cor_id = ?', [cor.id]);
+            const galeria = await dbAll(
+              `SELECT url FROM galeria WHERE cor_id = ${p(1)}`,
+              [cor.id]
+            );
+
             return {
               nome: cor.nome,
               hex: cor.hex,
@@ -23,10 +33,11 @@ router.get('/', async (req, res) => {
             };
           })
         );
+
         return { ...prod, cores: coresCompletas };
       })
     );
-    
+
     res.json(produtosCompletos);
   } catch (err) {
     console.error('Erro ao listar produtos:', err);
@@ -34,18 +45,30 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET: Obter produto por ID (público)
+// GET: Produto por ID
 router.get('/:id', async (req, res) => {
   try {
-    const produto = await dbGet('SELECT * FROM produtos WHERE id = ?', [req.params.id]);
+    const produto = await dbGet(
+      `SELECT * FROM produtos WHERE id = ${p(1)}`,
+      [req.params.id]
+    );
+
     if (!produto) {
       return res.status(404).json({ erro: 'Produto não encontrado' });
     }
 
-    const cores = await dbAll('SELECT * FROM cores WHERE produto_id = ?', [produto.id]);
+    const cores = await dbAll(
+      `SELECT * FROM cores WHERE produto_id = ${p(1)}`,
+      [produto.id]
+    );
+
     const coresCompletas = await Promise.all(
       cores.map(async (cor) => {
-        const galeria = await dbAll('SELECT url FROM galeria WHERE cor_id = ?', [cor.id]);
+        const galeria = await dbAll(
+          `SELECT url FROM galeria WHERE cor_id = ${p(1)}`,
+          [cor.id]
+        );
+
         return {
           nome: cor.nome,
           hex: cor.hex,
@@ -61,10 +84,9 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST: Criar produto (requer autenticação como admin)
+// POST: Criar produto
 router.post('/', verificarToken, async (req, res) => {
   try {
-    // Verificar se é admin
     if (req.usuario.email !== 'admin@kpr.com') {
       return res.status(403).json({ erro: 'Apenas o admin pode criar produtos' });
     }
@@ -75,86 +97,63 @@ router.post('/', verificarToken, async (req, res) => {
       return res.status(400).json({ erro: 'Nome, tipo e cores são obrigatórios' });
     }
 
-    // Inserir produto
-    const result = await dbRun(
-      'INSERT INTO produtos (nome, tipo, preco) VALUES (?, ?, ?)',
-      [nome, tipo, preco || null]
-    );
-    const produtoId = result.lastID;
+    const insertProduto = isPostgres
+      ? `INSERT INTO produtos (nome, tipo, preco) VALUES ($1, $2, $3) RETURNING id`
+      : `INSERT INTO produtos (nome, tipo, preco) VALUES (?, ?, ?)`;
 
-    // Inserir cores e galeria
+    const result = await dbRun(insertProduto, [nome, tipo, preco || null]);
+    const produtoId = isPostgres ? result.rows[0].id : result.lastID;
+
     for (const cor of cores) {
-      const corResult = await dbRun(
-        'INSERT INTO cores (produto_id, nome, hex) VALUES (?, ?, ?)',
-        [produtoId, cor.nome, cor.hex]
-      );
-      const corId = corResult.lastID;
+      const insertCor = isPostgres
+        ? `INSERT INTO cores (produto_id, nome, hex) VALUES ($1, $2, $3) RETURNING id`
+        : `INSERT INTO cores (produto_id, nome, hex) VALUES (?, ?, ?)`;
 
-      // Inserir URLs da galeria
+      const corResult = await dbRun(insertCor, [produtoId, cor.nome, cor.hex]);
+      const corId = isPostgres ? corResult.rows[0].id : corResult.lastID;
+
       if (Array.isArray(cor.gallery)) {
         for (const url of cor.gallery) {
           await dbRun(
-            'INSERT INTO galeria (cor_id, url) VALUES (?, ?)',
+            `INSERT INTO galeria (cor_id, url) VALUES (${p(1)}, ${p(2)})`,
             [corId, url]
           );
         }
       }
     }
 
-    res.status(201).json({ 
-      mensagem: 'Produto criado com sucesso',
-      produtoId 
-    });
+    res.status(201).json({ mensagem: 'Produto criado com sucesso', produtoId });
   } catch (err) {
     console.error('Erro ao criar produto:', err);
     res.status(500).json({ erro: 'Erro ao criar produto' });
   }
 });
 
-// PUT: Atualizar produto (requer autenticação como admin)
+// PUT: Atualizar produto
 router.put('/:id', verificarToken, async (req, res) => {
   try {
-    // Verificar se é admin
     if (req.usuario.email !== 'admin@kpr.com') {
       return res.status(403).json({ erro: 'Apenas o admin pode atualizar produtos' });
     }
 
-    const { nome, tipo, preco, cores } = req.body;
+    const produto = await dbGet(
+      `SELECT id FROM produtos WHERE id = ${p(1)}`,
+      [req.params.id]
+    );
 
-    // Verificar se produto existe
-    const produto = await dbGet('SELECT * FROM produtos WHERE id = ?', [req.params.id]);
     if (!produto) {
       return res.status(404).json({ erro: 'Produto não encontrado' });
     }
 
-    // Atualizar produto
     await dbRun(
-      'UPDATE produtos SET nome = ?, tipo = ?, preco = ? WHERE id = ?',
-      [nome, tipo, preco || null, req.params.id]
+      `UPDATE produtos SET nome = ${p(1)}, tipo = ${p(2)}, preco = ${p(3)} WHERE id = ${p(4)}`,
+      [req.body.nome, req.body.tipo, req.body.preco || null, req.params.id]
     );
 
-    // Deletar cores antigas
-    await dbRun('DELETE FROM cores WHERE produto_id = ?', [req.params.id]);
-
-    // Inserir novas cores e galeria
-    if (Array.isArray(cores)) {
-      for (const cor of cores) {
-        const corResult = await dbRun(
-          'INSERT INTO cores (produto_id, nome, hex) VALUES (?, ?, ?)',
-          [req.params.id, cor.nome, cor.hex]
-        );
-        const corId = corResult.lastID;
-
-        if (Array.isArray(cor.gallery)) {
-          for (const url of cor.gallery) {
-            await dbRun(
-              'INSERT INTO galeria (cor_id, url) VALUES (?, ?)',
-              [corId, url]
-            );
-          }
-        }
-      }
-    }
+    await dbRun(
+      `DELETE FROM cores WHERE produto_id = ${p(1)}`,
+      [req.params.id]
+    );
 
     res.json({ mensagem: 'Produto atualizado com sucesso' });
   } catch (err) {
@@ -163,20 +162,17 @@ router.put('/:id', verificarToken, async (req, res) => {
   }
 });
 
-// DELETE: Deletar produto (requer autenticação como admin)
+// DELETE: Deletar produto
 router.delete('/:id', verificarToken, async (req, res) => {
   try {
-    // Verificar se é admin
     if (req.usuario.email !== 'admin@kpr.com') {
       return res.status(403).json({ erro: 'Apenas o admin pode deletar produtos' });
     }
 
-    const produto = await dbGet('SELECT * FROM produtos WHERE id = ?', [req.params.id]);
-    if (!produto) {
-      return res.status(404).json({ erro: 'Produto não encontrado' });
-    }
-
-    await dbRun('DELETE FROM produtos WHERE id = ?', [req.params.id]);
+    await dbRun(
+      `DELETE FROM produtos WHERE id = ${p(1)}`,
+      [req.params.id]
+    );
 
     res.json({ mensagem: 'Produto deletado com sucesso' });
   } catch (err) {
