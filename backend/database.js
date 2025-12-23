@@ -157,7 +157,20 @@ async function initDb() {
     console.log('✓ Tabelas inicializadas');
 
     // Criar admin padrão se não existir
-    const adminExistente = await dbGet('SELECT * FROM usuarios WHERE email = $1', ['admin@kpr.com']);
+    let adminExistente;
+
+    if (isPostgres) {
+      adminExistente = await dbGet(
+        'SELECT * FROM usuarios WHERE email = $1',
+        ['admin@kpr.com']
+      );
+    } else {
+      adminExistente = await dbGet(
+        'SELECT * FROM usuarios WHERE email = ?',
+        ['admin@kpr.com']
+      );
+    }
+    
     if (!adminExistente) {
       const senhaHash = await bcrypt.hash('admin123', 10);
       if (isPostgres) {
