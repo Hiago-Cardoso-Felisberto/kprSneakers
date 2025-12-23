@@ -1,11 +1,11 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import { gerarToken, verificarToken } from '../auth.js';
-import { dbGet, dbRun, isPostgres } from '../database.js';
+import { dbGet, dbRun } from '../database.js';
 
 const router = express.Router();
 
-// Registro desativado
+// REGISTRO (DESATIVADO)
 router.post('/register', async (req, res) => {
   return res.status(403).json({
     erro: 'Registro de novos usuários não permitido. Apenas o admin padrão pode acessar o sistema.'
@@ -21,19 +21,10 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ erro: 'Email e senha são obrigatórios' });
     }
 
-    let usuario;
-
-    if (isPostgres) {
-      usuario = await dbGet(
-        'SELECT id, email, nome, senha FROM usuarios WHERE email = $1',
-        [email]
-      );
-    } else {
-      usuario = await dbGet(
-        'SELECT id, email, nome, senha FROM usuarios WHERE email = ?',
-        [email]
-      );
-    }
+    const usuario = await dbGet(
+      'SELECT id, email, nome, senha FROM usuarios WHERE email = $1',
+      [email]
+    );
 
     if (!usuario || !usuario.senha) {
       return res.status(401).json({ erro: 'Email ou senha inválidos' });
@@ -61,32 +52,27 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// ALTERAR SENHA (autenticado)
+// ALTERAR SENHA (AUTH)
 router.post('/alterar-senha', verificarToken, async (req, res) => {
   try {
     const { senhaAtual, senhaNova } = req.body;
 
     if (!senhaAtual || !senhaNova) {
-      return res.status(400).json({ erro: 'Senha atual e nova senha são obrigatórias' });
+      return res.status(400).json({
+        erro: 'Senha atual e nova senha são obrigatórias'
+      });
     }
 
     if (senhaNova.length < 6) {
-      return res.status(400).json({ erro: 'Nova senha deve ter pelo menos 6 caracteres' });
+      return res.status(400).json({
+        erro: 'Nova senha deve ter pelo menos 6 caracteres'
+      });
     }
 
-    let usuario;
-
-    if (isPostgres) {
-      usuario = await dbGet(
-        'SELECT id, senha FROM usuarios WHERE id = $1',
-        [req.usuario.id]
-      );
-    } else {
-      usuario = await dbGet(
-        'SELECT id, senha FROM usuarios WHERE id = ?',
-        [req.usuario.id]
-      );
-    }
+    const usuario = await dbGet(
+      'SELECT id, senha FROM usuarios WHERE id = $1',
+      [req.usuario.id]
+    );
 
     if (!usuario) {
       return res.status(404).json({ erro: 'Usuário não encontrado' });
@@ -99,17 +85,10 @@ router.post('/alterar-senha', verificarToken, async (req, res) => {
 
     const senhaHash = await bcrypt.hash(senhaNova, 10);
 
-    if (isPostgres) {
-      await dbRun(
-        'UPDATE usuarios SET senha = $1 WHERE id = $2',
-        [senhaHash, req.usuario.id]
-      );
-    } else {
-      await dbRun(
-        'UPDATE usuarios SET senha = ? WHERE id = ?',
-        [senhaHash, req.usuario.id]
-      );
-    }
+    await dbRun(
+      'UPDATE usuarios SET senha = $1 WHERE id = $2',
+      [senhaHash, req.usuario.id]
+    );
 
     res.json({ mensagem: 'Senha alterada com sucesso' });
   } catch (err) {

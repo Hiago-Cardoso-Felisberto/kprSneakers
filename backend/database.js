@@ -14,7 +14,10 @@ let sqliteDb = null;
 let pgPool = null;
 
 if (isPostgres) {
-  pgPool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+  pgPool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
   console.log('✓ Usando Postgres (DATABASE_URL detectado)');
 } else {
   sqliteDb = new sqlite3.Database(sqlitePath, (err) => {
@@ -23,19 +26,32 @@ if (isPostgres) {
   });
 }
 
-// dbRun/dbGet/dbAll com comportamento unificado
+/**
+ * Normaliza SQL:
+ * - Postgres → mantém $1, $2...
+ * - SQLite  → converte $1, $2... para ?
+ */
+function normalizeSql(sql) {
+  if (isPostgres) return sql;
+  return sql.replace(/\$\d+/g, '?');
+}
+
+// DB HELPERS
 const dbRun = async (sql, params = []) => {
+  const finalSql = normalizeSql(sql);
+
   if (isPostgres) {
-    // Em inserts, adicionar RETURNING id se não existir
-    const isInsert = /^\s*INSERT\b/i.test(sql);
-    const hasReturning = /RETURNING\s+\w+/i.test(sql);
-    const finalSql = isInsert && !hasReturning ? `${sql} RETURNING id` : sql;
-    const res = await pgPool.query(finalSql, params);
+    const isInsert = /^\s*INSERT\b/i.test(finalSql);
+    const hasReturning = /RETURNING\s+\w+/i.test(finalSql);
+    const sqlWithReturning =
+      isInsert && !hasReturning ? `${finalSql} RETURNING id` : finalSql;
+
+    const res = await pgPool.query(sqlWithReturning, params);
     if (isInsert) return { lastID: res.rows[0].id };
     return res;
   } else {
     return new Promise((resolve, reject) => {
-      sqliteDb.run(sql, params, function(err) {
+      sqliteDb.run(finalSql, params, function (err) {
         if (err) reject(err);
         else resolve(this);
       });
@@ -44,12 +60,14 @@ const dbRun = async (sql, params = []) => {
 };
 
 const dbGet = async (sql, params = []) => {
+  const finalSql = normalizeSql(sql);
+
   if (isPostgres) {
-    const res = await pgPool.query(sql, params);
+    const res = await pgPool.query(finalSql, params);
     return res.rows[0] || null;
   } else {
     return new Promise((resolve, reject) => {
-      sqliteDb.get(sql, params, (err, row) => {
+      sqliteDb.get(finalSql, params, (err, row) => {
         if (err) reject(err);
         else resolve(row || null);
       });
@@ -58,12 +76,14 @@ const dbGet = async (sql, params = []) => {
 };
 
 const dbAll = async (sql, params = []) => {
+  const finalSql = normalizeSql(sql);
+
   if (isPostgres) {
-    const res = await pgPool.query(sql, params);
+    const res = await pgPool.query(finalSql, params);
     return res.rows || [];
   } else {
     return new Promise((resolve, reject) => {
-      sqliteDb.all(sql, params, (err, rows) => {
+      sqliteDb.all(finalSql, params, (err, rows) => {
         if (err) reject(err);
         else resolve(rows || []);
       });
@@ -71,113 +91,60 @@ const dbAll = async (sql, params = []) => {
   }
 };
 
-// Inicializar tabelas conforme o banco
+// INIT DATABASE
 async function initDb() {
   try {
-    if (isPostgres) {
-      // Postgres schema
-      await dbRun(`
-        CREATE TABLE IF NOT EXISTS usuarios (
-          id SERIAL PRIMARY KEY,
-          email TEXT UNIQUE NOT NULL,
-          senha TEXT NOT NULL,
-          nome TEXT NOT NULL,
-          criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS usuarios (
+        id ${isPostgres ? 'SERIAL' : 'INTEGER'} PRIMARY KEY ${isPostgres ? '' : 'AUTOINCREMENT'},
+        email TEXT UNIQUE NOT NULL,
+        senha TEXT NOT NULL,
+        nome TEXT NOT NULL,
+        criado_em ${isPostgres ? 'TIMESTAMP' : 'DATETIME'} DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-      await dbRun(`
-        CREATE TABLE IF NOT EXISTS produtos (
-          id SERIAL PRIMARY KEY,
-          nome TEXT NOT NULL,
-          tipo TEXT NOT NULL,
-          preco NUMERIC,
-          criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS produtos (
+        id ${isPostgres ? 'SERIAL' : 'INTEGER'} PRIMARY KEY ${isPostgres ? '' : 'AUTOINCREMENT'},
+        nome TEXT NOT NULL,
+        tipo TEXT NOT NULL,
+        preco ${isPostgres ? 'NUMERIC' : 'REAL'},
+        criado_em ${isPostgres ? 'TIMESTAMP' : 'DATETIME'} DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-      await dbRun(`
-        CREATE TABLE IF NOT EXISTS cores (
-          id SERIAL PRIMARY KEY,
-          produto_id INTEGER NOT NULL REFERENCES produtos(id) ON DELETE CASCADE,
-          nome TEXT NOT NULL,
-          hex TEXT NOT NULL
-        )
-      `);
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS cores (
+        id ${isPostgres ? 'SERIAL' : 'INTEGER'} PRIMARY KEY ${isPostgres ? '' : 'AUTOINCREMENT'},
+        produto_id INTEGER NOT NULL REFERENCES produtos(id) ON DELETE CASCADE,
+        nome TEXT NOT NULL,
+        hex TEXT NOT NULL
+      )
+    `);
 
-      await dbRun(`
-        CREATE TABLE IF NOT EXISTS galeria (
-          id SERIAL PRIMARY KEY,
-          cor_id INTEGER NOT NULL REFERENCES cores(id) ON DELETE CASCADE,
-          url TEXT NOT NULL
-        )
-      `);
-    } else {
-      // SQLite schema
-      await dbRun(`
-        CREATE TABLE IF NOT EXISTS usuarios (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          email TEXT UNIQUE NOT NULL,
-          senha TEXT NOT NULL,
-          nome TEXT NOT NULL,
-          criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-      await dbRun(`
-        CREATE TABLE IF NOT EXISTS produtos (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          nome TEXT NOT NULL,
-          tipo TEXT NOT NULL,
-          preco REAL,
-          criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-      await dbRun(`
-        CREATE TABLE IF NOT EXISTS cores (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          produto_id INTEGER NOT NULL,
-          nome TEXT NOT NULL,
-          hex TEXT NOT NULL,
-          FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE CASCADE
-        )
-      `);
-
-      await dbRun(`
-        CREATE TABLE IF NOT EXISTS galeria (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          cor_id INTEGER NOT NULL,
-          url TEXT NOT NULL,
-          FOREIGN KEY (cor_id) REFERENCES cores(id) ON DELETE CASCADE
-        )
-      `);
-    }
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS galeria (
+        id ${isPostgres ? 'SERIAL' : 'INTEGER'} PRIMARY KEY ${isPostgres ? '' : 'AUTOINCREMENT'},
+        cor_id INTEGER NOT NULL REFERENCES cores(id) ON DELETE CASCADE,
+        url TEXT NOT NULL
+      )
+    `);
 
     console.log('✓ Tabelas inicializadas');
 
     // Criar admin padrão se não existir
-    let adminExistente;
+    const adminExistente = await dbGet(
+      'SELECT * FROM usuarios WHERE email = $1',
+      ['admin@kpr.com']
+    );
 
-    if (isPostgres) {
-      adminExistente = await dbGet(
-        'SELECT * FROM usuarios WHERE email = $1',
-        ['admin@kpr.com']
-      );
-    } else {
-      adminExistente = await dbGet(
-        'SELECT * FROM usuarios WHERE email = ?',
-        ['admin@kpr.com']
-      );
-    }
-    
     if (!adminExistente) {
       const senhaHash = await bcrypt.hash('admin123', 10);
-      if (isPostgres) {
-        await dbRun('INSERT INTO usuarios (email, senha, nome) VALUES ($1, $2, $3)', ['admin@kpr.com', senhaHash, 'Admin']);
-      } else {
-        await dbRun('INSERT INTO usuarios (email, senha, nome) VALUES (?, ?, ?)', ['admin@kpr.com', senhaHash, 'Admin']);
-      }
+      await dbRun(
+        'INSERT INTO usuarios (email, senha, nome) VALUES ($1, $2, $3)',
+        ['admin@kpr.com', senhaHash, 'Admin']
+      );
       console.log('✓ Admin padrão criado: admin@kpr.com / admin123');
     }
   } catch (err) {
