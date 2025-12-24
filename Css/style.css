@@ -187,7 +187,6 @@ body{
   height: var(--gallery-height); 
   box-sizing: border-box; 
   padding: 12px; 
-  transform: translateY(-40px);
 }
 .p{
   width:100%;
