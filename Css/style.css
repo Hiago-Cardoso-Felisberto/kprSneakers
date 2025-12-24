@@ -156,7 +156,8 @@ body{
   width:100%; height:100%;
   background:rgba(0,0,0,0.95);
   justify-content:center;
-  align-items:center;
+  align-items:flex-start;
+  padding-top:40px;
   z-index:999;
   flex-direction:column;
   transition:opacity 0.4s;
@@ -182,7 +183,7 @@ body{
   max-width:90%; 
   animation:fadeIn 0.3s ease;
   --gallery-width: 50vh;
-  --gallery-height: 70vh;
+  --gallery-height: 65vh;
   width: var(--gallery-width);
   height: var(--gallery-height);
   box-sizing: border-box;
