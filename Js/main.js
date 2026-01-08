@@ -3,7 +3,7 @@ import { carregarProdutosAPI, criarProdutoAPI, atualizarProdutoAPI, deletarProdu
 
 // ==================== VITRINE ====================
 let produtos = []; // Será preenchido via API (fetchProdutos)
-const container = document.getElementById('produtos');
+
 // Formata preço para exibição (BRL). Aceita número ou string numérica.
 function formatPreco(valor){
   if(valor===undefined || valor===null || valor==='') return '';
@@ -167,24 +167,54 @@ window.excluirProduto = function(index){
 };
 
 // --- Formulário admin: adicionar cores dinamicamente e submeter ---
+// Dicionário de nomes → hex
+const nomeParaHex = {
+  branco: "#ffffff",
+  preto: "#000000",
+  vermelho: "#ff0000",
+  azul: "#0000ff",
+  verde: "#008000",
+  amarelo: "#ffff00",
+  cinza: "#808080",
+  rosa: "#ffc0cb",
+  roxo: "#800080",
+  laranja: "#ffa500",
+  marrom: "#8b4513"
+  // pode expandir conforme necessário
+};
+
 function createColorBlock(index, data){
   const wrapper = document.createElement('div');
   wrapper.className = 'admin-color-block';
   wrapper.style = 'display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px;';
+
   wrapper.innerHTML = `
     <input class="adm-color-name" placeholder="Nome da cor (ex: Branco)" required style="flex:1;min-width:150px;">
-    <input class="adm-color-hex" placeholder="Hex (ex: #ffffff)" style="width:110px;">
+    <input class="adm-color-hex" type="color" value="#cccccc" style="width:60px;">
     <textarea class="adm-color-gallery" placeholder="URLs da galeria (uma por linha)" rows="3" style="flex:2;min-width:220px;"></textarea>
     <button type="button" class="adm-remove-color b" style="height:38px;">Remover</button>
   `;
+
+  // Preenche dados existentes
   if(data){
     wrapper.querySelector('.adm-color-name').value = data.nome || '';
-    wrapper.querySelector('.adm-color-hex').value = data.hex || '';
+    wrapper.querySelector('.adm-color-hex').value = data.hex || '#cccccc';
     wrapper.querySelector('.adm-color-gallery').value = (data.gallery||[]).join('\n');
   }
+
+  // Quando o usuário digitar o nome da cor, tenta converter para hex
+  const nomeInput = wrapper.querySelector('.adm-color-name');
+  const hexInput = wrapper.querySelector('.adm-color-hex');
+  nomeInput.addEventListener('input', ()=>{
+    const nome = nomeInput.value.trim().toLowerCase();
+    if(nomeParaHex[nome]){
+      hexInput.value = nomeParaHex[nome];
+    }
+  });
+
   wrapper.querySelector('.adm-remove-color').addEventListener('click', ()=> wrapper.remove());
   return wrapper;
-} 
+}
 
 function initAdminForm(){
   const coresContainer = document.getElementById('admin-cores');
@@ -196,16 +226,22 @@ function initAdminForm(){
 
   form.addEventListener('submit', e=>{
     e.preventDefault();
-    const nome = document.getElementById('admin-nome').value.trim();
-    const tipo = document.getElementById('admin-tipo').value;
-    const precoVal = document.getElementById('admin-preco').value;
-    const preco = precoVal? Number(precoVal) : undefined;
-    const cores = Array.from(coresContainer.querySelectorAll('.admin-color-block')).map(block=>{
-      const nomeC = block.querySelector('.adm-color-name').value.trim();
-      const hex = block.querySelector('.adm-color-hex').value.trim() || '#ccc';
-      const galleryRaw = block.querySelector('.adm-color-gallery').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-      return { nome: nomeC || 'Cor', hex, gallery: galleryRaw.length? galleryRaw : ['Imagens/Logo.jpg'] };
-    }).filter(c=>c.gallery && c.gallery.length);
+      const nome = document.getElementById('admin-nome').value.trim();
+      const tipo = document.getElementById('admin-tipo').value;
+      const precoVal = document.getElementById('admin-preco').value;
+      const preco = precoVal ? Number(precoVal) : undefined;
+
+      const cores = Array.from(coresContainer.querySelectorAll('.admin-color-block')).map(block=>{
+        const nomeC = block.querySelector('.adm-color-name').value.trim();
+        const hexInput = block.querySelector('.adm-color-hex').value;
+        const hex = nomeParaHex[nomeC.toLowerCase()] || hexInput || '#ccc';
+        const galleryRaw = block.querySelector('.adm-color-gallery').value
+          .split(/\r?\n/)
+          .map(s=>s.trim())
+          .filter(Boolean);
+        return { nome: nomeC || 'Cor', hex, gallery: galleryRaw.length ? galleryRaw : ['Imagens/Logo.jpg'] };
+      }).filter(c=>c.gallery && c.gallery.length);
+
 
     if(!nome || !cores.length){
       alert('Preencha ao menos nome do produto e uma cor com pelo menos uma imagem.');

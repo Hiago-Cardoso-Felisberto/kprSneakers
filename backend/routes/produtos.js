@@ -139,12 +139,10 @@ router.post('/', verificarToken, async (req, res) => {
 router.put('/:id', verificarToken, async (req, res) => {
   try {
     if (req.usuario.email !== 'admin@kpr.com') {
-      return res.status(403).json({
-        erro: 'Apenas o admin pode atualizar produtos'
-      });
+      return res.status(403).json({ erro: 'Apenas o admin pode atualizar produtos' });
     }
 
-    const { nome, tipo, preco } = req.body;
+    const { nome, tipo, preco, cores } = req.body;
 
     const produto = await dbGet(
       'SELECT id FROM produtos WHERE id = $1',
@@ -155,15 +153,54 @@ router.put('/:id', verificarToken, async (req, res) => {
       return res.status(404).json({ erro: 'Produto não encontrado' });
     }
 
+    // Atualiza dados principais do produto
     await dbRun(
       'UPDATE produtos SET nome = $1, tipo = $2, preco = $3 WHERE id = $4',
       [nome, tipo, preco || null, req.params.id]
     );
 
-    await dbRun(
-      'DELETE FROM cores WHERE produto_id = $1',
+    // Busca cores atuais do produto
+    const coresExistentes = await dbAll(
+      'SELECT * FROM cores WHERE produto_id = $1',
       [req.params.id]
     );
+
+    const idsExistentes = coresExistentes.map(c => c.id);
+    const idsRecebidos = (cores || []).map(c => c.id).filter(Boolean);
+
+    // Remove cores que não vieram no payload
+    for (const id of idsExistentes) {
+      if (!idsRecebidos.includes(id)) {
+        await dbRun('DELETE FROM cores WHERE id = $1', [id]);
+      }
+    }
+
+    // Atualiza ou insere cores
+    for (const cor of cores || []) {
+      if (cor.id) {
+        // Atualiza cor existente
+        await dbRun(
+          'UPDATE cores SET nome = $1, hex = $2 WHERE id = $3',
+          [cor.nome, cor.hex, cor.id]
+        );
+
+        // Atualiza galeria: remove imagens antigas e reinsere as novas
+        await dbRun('DELETE FROM galeria WHERE cor_id = $1', [cor.id]);
+        for (const url of cor.gallery || []) {
+          await dbRun('INSERT INTO galeria (cor_id, url) VALUES ($1, $2)', [cor.id, url]);
+        }
+      } else {
+        // Insere nova cor
+        const novaCor = await dbGet(
+          'INSERT INTO cores (produto_id, nome, hex) VALUES ($1, $2, $3) RETURNING id',
+          [req.params.id, cor.nome, cor.hex]
+        );
+
+        for (const url of cor.gallery || []) {
+          await dbRun('INSERT INTO galeria (cor_id, url) VALUES ($1, $2)', [novaCor.id, url]);
+        }
+      }
+    }
 
     res.json({ mensagem: 'Produto atualizado com sucesso' });
   } catch (err) {
@@ -171,6 +208,7 @@ router.put('/:id', verificarToken, async (req, res) => {
     res.status(500).json({ erro: 'Erro ao atualizar produto' });
   }
 });
+
 
 // DELETE: DELETAR PRODUTO
 router.delete('/:id', verificarToken, async (req, res) => {
