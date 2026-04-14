@@ -3,7 +3,8 @@
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
 const API_URL = isLocalhost
   ? 'http://localhost:3001/api'
-  : 'https://kprimports-api.onrender.com/api';
+  : 'https://kprsneakers-production.up.railway.app';
+  
 
 // Expor para debugging no Console (somente leitura)
 try{ window.API_URL = API_URL; }catch(e){}
