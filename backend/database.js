@@ -1,89 +1,45 @@
-import sqlite3 from 'sqlite3';
 import bcrypt from 'bcryptjs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { Pool } from 'pg';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const sqlitePath = path.join(__dirname, 'database.db');
-
-// Detectar uso de Postgres via DATABASE_URL
-const isPostgres = !!process.env.DATABASE_URL;
-
-let sqliteDb = null;
-let pgPool = null;
-
-if (isPostgres) {
-  pgPool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-  });
-  console.log(' Usando Postgres (DATABASE_URL detectado)');
-} else {
-  sqliteDb = new sqlite3.Database(sqlitePath, (err) => {
-    if (err) console.error('Erro ao conectar ao SQLite:', err);
-    else console.log(' Conectado ao SQLite');
-  });
+if (!process.env.DATABASE_URL) {
+  console.error('ERROR: DATABASE_URL não está definida. O backend exige Postgres.');
+  process.exit(1);
 }
 
+const pgPool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
+const isPostgres = true;
+console.log('Usando Postgres (DATABASE_URL detectado)');
+
 function normalizeSql(sql) {
-  if (isPostgres) return sql;
-  return sql.replace(/\$\d+/g, '?');
+  return sql;
 }
 
 // DB HELPERS
 const dbRun = async (sql, params = []) => {
   const finalSql = normalizeSql(sql);
+  const isInsert = /^\s*INSERT\b/i.test(finalSql);
+  const hasReturning = /RETURNING\s+\w+/i.test(finalSql);
+  const sqlWithReturning =
+    isInsert && !hasReturning ? `${finalSql} RETURNING id` : finalSql;
 
-  if (isPostgres) {
-    const isInsert = /^\s*INSERT\b/i.test(finalSql);
-    const hasReturning = /RETURNING\s+\w+/i.test(finalSql);
-    const sqlWithReturning =
-      isInsert && !hasReturning ? `${finalSql} RETURNING id` : finalSql;
-
-    const res = await pgPool.query(sqlWithReturning, params);
-    if (isInsert) return { lastID: res.rows[0].id };
-    return res;
-  } else {
-    return new Promise((resolve, reject) => {
-      sqliteDb.run(finalSql, params, function (err) {
-        if (err) reject(err);
-        else resolve(this);
-      });
-    });
-  }
+  const res = await pgPool.query(sqlWithReturning, params);
+  if (isInsert) return { lastID: res.rows[0].id };
+  return res;
 };
 
 const dbGet = async (sql, params = []) => {
   const finalSql = normalizeSql(sql);
-
-  if (isPostgres) {
-    const res = await pgPool.query(finalSql, params);
-    return res.rows[0] || null;
-  } else {
-    return new Promise((resolve, reject) => {
-      sqliteDb.get(finalSql, params, (err, row) => {
-        if (err) reject(err);
-        else resolve(row || null);
-      });
-    });
-  }
+  const res = await pgPool.query(finalSql, params);
+  return res.rows[0] || null;
 };
 
 const dbAll = async (sql, params = []) => {
   const finalSql = normalizeSql(sql);
-
-  if (isPostgres) {
-    const res = await pgPool.query(finalSql, params);
-    return res.rows || [];
-  } else {
-    return new Promise((resolve, reject) => {
-      sqliteDb.all(finalSql, params, (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows || []);
-      });
-    });
-  }
+  const res = await pgPool.query(finalSql, params);
+  return res.rows || [];
 };
 
 // INIT DATABASE
@@ -147,4 +103,4 @@ async function initDb() {
   }
 }
 
-export { sqliteDb as db, dbRun, dbGet, dbAll, initDb };
+export { dbRun, dbGet, dbAll, initDb };
