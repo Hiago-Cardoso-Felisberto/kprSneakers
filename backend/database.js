@@ -18,19 +18,14 @@ if (isPostgres) {
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
   });
-  console.log('✓ Usando Postgres (DATABASE_URL detectado)');
+  console.log(' Usando Postgres (DATABASE_URL detectado)');
 } else {
   sqliteDb = new sqlite3.Database(sqlitePath, (err) => {
     if (err) console.error('Erro ao conectar ao SQLite:', err);
-    else console.log('✓ Conectado ao SQLite');
+    else console.log(' Conectado ao SQLite');
   });
 }
 
-/**
- * Normaliza SQL:
- * - Postgres → mantém $1, $2...
- * - SQLite  → converte $1, $2... para ?
- */
 function normalizeSql(sql) {
   if (isPostgres) return sql;
   return sql.replace(/\$\d+/g, '?');
@@ -131,7 +126,7 @@ async function initDb() {
       )
     `);
 
-    console.log('✓ Tabelas inicializadas');
+    console.log('Tabelas inicializadas');
 
     // Criar admin padrão se não existir
     const adminExistente = await dbGet(
@@ -145,7 +140,7 @@ async function initDb() {
         'INSERT INTO usuarios (email, senha, nome) VALUES ($1, $2, $3)',
         ['admin@kpr.com', senhaHash, 'Admin']
       );
-      console.log('✓ Admin padrão criado: admin@kpr.com / admin123');
+      console.log('Admin padrão criado');
     }
   } catch (err) {
     console.error('Erro ao inicializar tabelas:', err);

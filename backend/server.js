@@ -32,10 +32,9 @@ app.get('/api/health', (req, res) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-  console.log(`\n📝 Primeiro passo: registre um admin em POST /api/auth/register`);
-  console.log(`Exemplo: { "email": "admin@kpr.com", "senha": "senha123", "nome": "Admin" }`);
-  console.log(`\n🔑 Depois faça login em POST /api/auth/login com o token retornado`);
+  console.log(` Servidor rodando em http://localhost:${PORT}`);
+  console.log(`\n Primeiro passo: registre um admin em POST /api/auth/register`);
+  console.log(`\n Depois faça login em POST /api/auth/login com o token retornado`);
   console.log(`\nAPIs disponíveis:`);
   console.log(`  GET  /api/produtos              - Listar todos os produtos`);
   console.log(`  GET  /api/produtos/:id          - Obter um produto`);
